@@ -1,0 +1,102 @@
+{
+  "kind": "template",
+  "type": "Microsoft.Blueprint/blueprints/artifacts",
+  "name": "DataFactorySharedRoleAssigments",
+  "properties": {
+    "dependsOn": [
+      "data-factory-dev",
+      "data-factory-prod",
+      "data-factory-shared"
+    ],
+    "displayName": "Data Factory Shared Role Assigments",
+    "resourceGroup": "resource-group-placeholder",
+    "parameters": {
+      "isProduction": {
+        "value": "[parameters('isProduction')]"
+      },
+      "projectName": {
+        "value": "[parameters('projectName')"
+      },
+      "boundedContext": {
+        "value": "[parameters('boundedContext')]"
+      },
+      "businessOwner": {
+        "value": "[parameters('businessOwner')]"
+      },
+      "location": {
+        "value": "[parameters('location')]"
+      },
+      "supportContact": {
+        "value": "[parameters('supportContact')]"
+      },
+      "team": {
+        "value": "[parameters('team')]"
+      },
+      "TeamObjectId": {
+        "value": "[parameters('team').objectId]"
+      }
+    },
+    "template": {
+      "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "boundedContext": {
+          "type": "string"
+        },
+        "businessOwner": {
+          "type": "string"
+        },
+        "isProduction": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "supportContact": {
+          "type": "string"
+        },
+        "team": {
+          "type": "string"
+        },
+        "teamObjectId": {
+          "type": "string"
+        }
+      },
+      "variables": {
+        "dataFactoryDevName": "<Data Factory Dev Name>",
+        "dataFactoryProdName": "<Data Factory Prod Name>",
+        "sharedDataFactoryName": "<Shared Data Factory>",
+        "contributorRoleGuid": "<Contributor Role GUID",
+        "sharedIRContributorRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('contributorRoleGuid')]"
+      },
+      "resources": [
+        {
+          "type": "Microsoft.Authorization/roleAssignments",
+          "apiVersion": "2018-09-01-preview",
+          "name": "[guid(variables('sharedDataFactoryName'), 'dev')]",
+          "properties": {
+            "roleDefinitionId": "[variables('sharedIRContributorRole')]",
+            "principalId": "[reference(resourceId('Microsoft.DataFactory/factories', variables('dataFactoryDevName')), '2018-06-01', 'full').identity.principalId]"
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.DataFactory/factories', variables('sharedDataFactoryName'))]",
+            "[resourceId('Microsoft.DataFactory/factories', variables('dataFactoryDevName'))]"
+          ]
+        },
+        {
+          "type": "Microsoft.DataFactory/factories/providers/roleAssignments",
+          "apiVersion": "2018-09-01-preview",
+          "name": "[concat(variables('sharedDataFactoryName'), '/Microsoft.Authorization/', guid(uniqueString(variables('sharedIRContributorRole'), parameters('teamObjectId'))))]",
+          "properties": {
+            "roleDefinitionId": "[variables('sharedIRContributorRole')]",
+            "principalId": "[reference(resourceId('Microsoft.DataFactory/factories', variables('dataFactoryProdName')), '2018-06-01', 'full').identity.principalId]"
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.DataFactory/factories', variables('sharedDataFactoryName'))]",
+            "[resourceId('Microsoft.DataFactory/factories', variables('dataFactoryProdName'))]"
+          ]
+        }
+      ]
+    }
+  }
+}

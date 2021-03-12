@@ -4,7 +4,8 @@
   "name": "keyVault",
   "properties": {
     "dependsOn": [
-      "log-workspace"
+      "log-workspace",
+      "key-vault"
     ],
     "displayName": "Key Vault",
     "resourceGroup": "resource-group-placeholder",
@@ -90,7 +91,9 @@
       "variables": {
         "keyVaultName": "<Key Vault Name>",
         "workspaceName": "<Workspace Name>",
-        "workspaceId": "[concat('/subscriptions/', subscription().subscriptionId, '/resourcegroups/', resourceGroup().name, '/providers/microsoft.operationalinsights/workspaces/', variables('workspaceName'))]"
+        "workspaceId": "[concat('/subscriptions/', subscription().subscriptionId, '/resourcegroups/', resourceGroup().name, '/providers/microsoft.operationalinsights/workspaces/', variables('workspaceName'))]",
+        "dataFactoryDevName": "<Data Factory in Dev>",
+        "dataFactoryProdName": "<Data Factory in Prod>"
       },
       "resources": [
         {
@@ -106,34 +109,25 @@
             "tenantId": "[parameters('tenantId')]",
             "accessPolicies": [
               {
-                "metadata": "Team Access",
+                "metadata": "Data Factory Dev Access",
                 "tenantId": "[parameters('tenantId')]",
-                "objectId": "[parameters('teamObjectId')]",
+                "objectId": "[reference(resourceId('Microsoft.DataFactory/factories', variables('dataFactoryDevName')), '2018-06-01', 'full').identity.principalId]",
                 "permissions": {
                   "keys": [],
                   "secrets": [
-                    "List",
-                    "Recover",
-                    "Backup",
-                    "Restore"
+                    "Get"
                   ],
                   "certificates": []
                 }
               },
               {
-                "metadata": "Deployment Application Access",
+                "metadata": "Data Factory Prod Access",
                 "tenantId": "[parameters('tenantId')]",
-                "objectId": "[parameters('deploymentApplicationObjectId')]",
+                "objectId": "[reference(resourceId('Microsoft.DataFactory/factories', variables('dataFactoryProdName')), '2018-06-01', 'full').identity.principalId]",
                 "permissions": {
                   "keys": [],
                   "secrets": [
-                    "List",
-                    "Get",
-                    "Set",
-                    "Delete",
-                    "Recover",
-                    "Backup",
-                    "Restore"
+                    "Get"
                   ],
                   "certificates": []
                 }

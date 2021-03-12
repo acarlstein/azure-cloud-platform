@@ -1,20 +1,23 @@
 {
   "kind": "template",
   "type": "Microsoft.Blueprint/blueprints/artifacts",
-  "name": "logWorkspace",
+  "name": "DataFactoryProd",
   "properties": {
     "dependsOn": [],
-    "displayName": "Log Workspace",
+    "displayName": "Data Factory Production",
     "resourceGroup": "resource-group-placeholder",
     "parameters": {
+      "isProduction": {
+        "value": "[parameters('isProduction')]"
+      },
+      "projectName": {
+        "value": "[parameters('projectName')"
+      },
       "boundedContext": {
         "value": "[parameters('boundedContext')]"
       },
       "businessOwner": {
         "value": "[parameters('businessOwner')]"
-      },
-      "isProduction": {
-        "value": "[parameters('isProduction')]"
       },
       "location": {
         "value": "[parameters('location')]"
@@ -25,18 +28,12 @@
       "team": {
         "value": "[parameters('team')]"
       },
-      "tenantId": {
-        "value": "[parameters('tenantId')]"
-      },
-      "teamObjectId": {
+      "TeamObjectId": {
         "value": "[parameters('team').objectId]"
-      },
-      "deploymentApplicationObjectId": {
-        "value": "[parameters('deployment').applicationObjectId]"
       }
     },
     "template": {
-      "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+      "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0",
       "parameters": {
         "boundedContext": {
@@ -57,41 +54,23 @@
         "team": {
           "type": "string"
         },
-        "tenantId": {
-          "type": "string"
-        },
         "teamObjectId": {
           "type": "string"
-        },
-        "deploymentApplicationObjectId": {
-          "type": "string"
-        },
-        "dataRetention": {
-          "type": "int",
-          "minValue": 7,
-          "maxValue": 730,
-          "defaultValue": 90,
-          "metadata": {
-            "description": "<description>"
-          }
         }
       },
       "variables": {
-        "workspaceName": "<Workspace name>"
+        "dataFactoryProdName": "<Data Factory Prod Name>"
       },
       "resources": [
         {
-          "type": "Microsoft.OperationalInsights/workspaces",
-          "apiVersion": "2017-03-15-preview",
-          "name": "[variables('workspaceName')]",
+          "type": "Microsoft.DataFactory/factories",
+          "apiVersion": "2018-06-01",
+          "name": "[variables('dataFactoryProdName')]",
           "location": "[parameters('location')]",
-          "tags": "[resourceGroup().tags]",
-          "properties": {
-            "sku": {
-              "name": "Free"
-            },
-            "retention": "[parameters('dataRetention')]"
-          }
+          "identity": {
+            "type": "SystemAssigned"
+          },
+          "tags": "[resourceGroup().tags]"
         }
       ]
     }

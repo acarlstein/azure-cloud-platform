@@ -42,7 +42,7 @@
       "variables": {
         "prodSqlServerName": "<prod server name>",
         "sqlDatabaseName": "<prod database name>"
-      },     
+      },
       "resources": [
         {
           "type": "Microsoft.Insights/actionGroups",
@@ -52,7 +52,7 @@
           "tags": "[resourceGroup().tags]",
           "properties": {
             "groupShortName": "[parameters('teamName')]",
-            "enabled": true,            
+            "enabled": true,
             "emailReceivers": [
               {
                 "name": "parameters('teamEmail')]",
@@ -67,7 +67,7 @@
           "apiVersion": "2018-03-01",
           "name": "Database Multi-metrics Alerts",
           "location": "global",
-          "dependsOn": [              
+          "dependsOn": [
             "[resourceId('microsoft.insights/actionGroups', parameters('teamName'))]"
           ],
           "tags": "[resourceGroup().tags]",
@@ -136,7 +136,7 @@
           "apiVersion": "2018-03-01",
           "name": "Database: DTU, CPU, Workers, IO, and Sessions Alerts",
           "location": "global",
-          "dependsOn": [              
+          "dependsOn": [
             "[resourceId('microsoft.insights/actionGroups', parameters('teamName'))]"
           ],
           "tags": "[resourceGroup().tags]",
