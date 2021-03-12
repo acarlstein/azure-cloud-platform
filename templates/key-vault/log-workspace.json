@@ -1,0 +1,99 @@
+{
+    "kind": "template",
+    "type": "Microsoft.Blueprint/blueprints/artifacts",
+    "name": "deployLogAnalyticsWorkspace",
+    "properties": {
+        "dependsOn": [],
+        "displayName": "Deploy Log Analytics Workspace",
+        "resourceGroup": "rg-analytics-placeholder",
+        "parameters": {
+            "boundedContext": {
+                "value": "[parameters('boundedContext')]"
+            },
+            "businessOwner": {
+                "value": "[parameters('businessOwner')]"
+            },
+            "isProduction": {
+                "value": "[parameters('isProduction')]"
+            },
+            "location": {
+                "value": "[parameters('location')]"
+            },
+            "supportContact": {
+                "value": "[parameters('supportContact')]"
+            },
+            "team": {
+                "value": "[parameters('team')]"
+            },
+            "tenantId": {
+                "value": "[parameters('tenantId')]"
+            },
+            "teamObjectId": {
+                "value": "[parameters('team').objectId]"
+            },
+            "deploymentApplicationObjectId": {
+                "value": "[parameters('deployment').applicationObjectId]"
+            }
+        },
+        "template": {
+            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+                "boundedContext": {
+                    "type": "string"
+                },
+                "businessOwner": {
+                    "type": "string"
+                },
+                "isProduction": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "supportContact": {
+                    "type": "string"
+                },
+                "team": {
+                    "type": "string"
+                },
+                "tenantId": {
+                    "type": "string"
+                },
+                "teamObjectId": {
+                    "type": "string"
+                },
+                "deploymentApplicationObjectId": {
+                    "type": "string"
+                },
+                "dataRetention": {
+                    "type": "int",
+                    "minValue": 7,
+                    "maxValue": 730,
+                    "defaultValue": 90,
+                    "metadata": {
+                        "description": "<description>"
+                    }
+                }
+            },
+            "variables": {
+                "workspaceName": "<Workspace name>"                               
+            },
+            "resources": [
+                {
+                    "name": "[variables('workspaceName')]",
+                    "type": "Microsoft.OperationalInsights/workspaces",
+                    "apiVersion": "2017-03-15-preview",
+                    "location": "[parameters('location')]",
+                    "tags": "[resourceGroup().tags]",
+                    "properties": {
+                        "sku": {
+                            "name": "Free"
+                        },
+                        "retention": "[parameters('dataRetention')]"                        
+                    }
+                }
+            ]
+        }
+    }
+}
