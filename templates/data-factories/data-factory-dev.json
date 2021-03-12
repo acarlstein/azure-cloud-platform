@@ -1,0 +1,88 @@
+{
+  "kind": "template",
+  "type": "Microsoft.Blueprint/blueprints/artifacts",
+  "name": "DataFactoryDev",
+  "properties": {
+    "dependsOn": [],
+    "displayName": "Data Factory Development",
+    "resourceGroup": "resource-group-placeholder",
+    "parameters": {
+      "isProduction": {
+        "value": "[parameters('isProduction')]"
+      },
+      "projectName": {
+        "value": "[parameters('projectName')"
+      },
+      "boundedContext": {
+        "value": "[parameters('boundedContext')]"
+      },
+      "businessOwner": {
+        "value": "[parameters('businessOwner')]"
+      },
+      "location": {
+        "value": "[parameters('location')]"
+      },
+      "supportContact": {
+        "value": "[parameters('supportContact')]"
+      },
+      "team": {
+        "value": "[parameters('team')]"
+      },      
+      "TeamObjectId": {
+        "value": "[parameters('team').objectId]"
+      }
+    },
+    "template": {
+      "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "boundedContext": {
+          "type": "string"
+        },
+        "businessOwner": {
+          "type": "string"
+        },
+        "isProduction": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "supportContact": {
+          "type": "string"
+        },
+        "team": {
+          "type": "string"
+        },
+        "teamObjectId": {
+          "type": "string"
+        } 
+      },
+      "variables": {
+        "dataFactoryDevName": "<Data Factory Dev Name>",
+      },
+      "resources": [
+        {
+          "name": "[variables('dataFactoryDevName')]",
+          "apiVersion": "2018-06-01",
+          "type": "Microsoft.DataFactory/factories",
+          "location": "[parameters('location')]",
+          "identity": {
+            "type": "SystemAssigned"
+          },
+          "tags": "[resourceGroup().tags]",
+          "properties": {
+            "repoConfiguration": {
+              "accountName": "<Account Name>",
+              "repositoryName": "<Repository Name>",
+              "collaborationBranch": "master",
+              "rootFolder": "/adf",
+              "type": "FactoryVSTSConfiguration",
+              "projectName": "[parameters('projectName')]"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
