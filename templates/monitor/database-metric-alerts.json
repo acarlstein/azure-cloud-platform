@@ -1,0 +1,215 @@
+{
+  "kind": "template",
+  "type": "Microsoft.Blueprint/blueprints/artifacts",
+  "name": "actionGroup",
+  "properties": {
+    "dependsOn": [
+      "action-group"
+    ],
+    "displayName": "<Action Group Name>",
+    "resourceGroup": "resource-group-placeholder",
+    "parameters": {
+      "teamEmail": {
+        "value": "[parameters('team').email]"
+      },
+      "teamName": {
+        "value": "[parameters('team').name]"
+      },
+      "subscriptionId": {
+        "value": "[parameters('subscriptionId')]"
+      },
+      "projectName": {
+        "value": "[parameters('projectName')]"
+      }
+    },
+    "template": {
+      "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "teamEmail": {
+          "type": "string"
+        },
+        "teamName": {
+          "type": "string"
+        },
+        "subscriptionId": {
+          "type": "string"
+        },
+        "projectName": {
+          "type": "string"
+        }
+      },
+      "variables": {
+        "prodSqlServerName": "<prod server name>",
+        "sqlDatabaseName": "<prod database name>"
+      },     
+      "resources": [
+        {
+          "type": "Microsoft.Insights/actionGroups",
+          "apiVersion": "2019-06-01",
+          "name": "[parameters('projectName')]",
+          "location": "Global",
+          "tags": "[resourceGroup().tags]",
+          "properties": {
+            "groupShortName": "[parameters('teamName')]",
+            "enabled": true,            
+            "emailReceivers": [
+              {
+                "name": "parameters('teamEmail')]",
+                "emailAddress": "[parameters('teamEmail')]",
+                "useCommonAlertSchema": false
+              }
+            ]
+          }
+        },
+        {
+          "type": "microsoft.insights/metricAlerts",
+          "apiVersion": "2018-03-01",
+          "name": "Database Multi-metrics Alerts",
+          "location": "global",
+          "dependsOn": [              
+            "[resourceId('microsoft.insights/actionGroups', parameters('teamName'))]"
+          ],
+          "tags": "[resourceGroup().tags]",
+          "properties": {
+            "description": "Database: Data Space in %, Failed Connections, Deadlocks, Blocked by Firewall",
+            "severity": 4,
+            "enabled": true,
+            "scopes": [
+              "[resourceId('Microsoft.Sql/servers/databases', variables('prodSqlServerName'), variables('sqlDatabaseName'))]"
+            ],
+            "evaluationFrequency": "PT30M",
+            "windowSize": "PT12H",
+            "criteria": {
+              "allOf": [
+                {
+                  "threshold": 95,
+                  "name": "StoragePercent",
+                  "metricNamespace": "Microsoft.Sql/servers/databases",
+                  "metricName": "storage_percent",
+                  "operator": "GreaterThan",
+                  "timeAggregation": "Maximum",
+                  "criterionType": "StaticThresholdCriterion"
+                },
+                {
+                  "threshold": 0,
+                  "name": "ConnectionFailedMetric",
+                  "metricNamespace": "Microsoft.Sql/servers/databases",
+                  "metricName": "connection_failed",
+                  "operator": "GreaterThan",
+                  "timeAggregation": "Total",
+                  "criterionType": "StaticThresholdCriterion"
+                },
+                {
+                  "threshold": 1,
+                  "name": "DeadlockMetric",
+                  "metricNamespace": "Microsoft.Sql/servers/databases",
+                  "metricName": "deadlock",
+                  "operator": "GreaterThan",
+                  "timeAggregation": "Total",
+                  "criterionType": "StaticThresholdCriterion"
+                },
+                {
+                  "threshold": 1,
+                  "name": "BlockedByFirewallMetric",
+                  "metricNamespace": "Microsoft.Sql/servers/databases",
+                  "metricName": "blocked_by_firewall",
+                  "operator": "GreaterThan",
+                  "timeAggregation": "Total",
+                  "criterionType": "StaticThresholdCriterion"
+                }
+              ],
+              "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria"
+            },
+            "autoMitigate": true,
+            "targetResourceType": "Microsoft.Sql/servers/databases",
+            "actions": [
+              {
+                "actionGroupId": "[resourceId('microsoft.insights/actionGroups', parameters('teamName'))]",
+                "webHookProperties": {}
+              }
+            ]
+          }
+        },
+        {
+          "type": "microsoft.insights/metricAlerts",
+          "apiVersion": "2018-03-01",
+          "name": "Database: DTU, CPU, Workers, IO, and Sessions Alerts",
+          "location": "global",
+          "dependsOn": [              
+            "[resourceId('microsoft.insights/actionGroups', parameters('teamName'))]"
+          ],
+          "tags": "[resourceGroup().tags]",
+          "properties": {
+            "description": "DTU, CPU, Workers, IO, and Sessions Alerts",
+            "severity": 4,
+            "enabled": true,
+            "scopes": [
+              "[resourceId('Microsoft.Sql/servers/databases', variables('prodSqlServerName'), variables('sqlDatabaseName'))]"
+            ],
+            "evaluationFrequency": "PT30M",
+            "windowSize": "PT12H",
+            "criteria": {
+              "allOf": [
+                {
+                  "threshold": 95,
+                  "name": "CPUPercentMetric",
+                  "metricNamespace": "Microsoft.Sql/servers/databases",
+                  "metricName": "cpu_percent",
+                  "operator": "GreaterThan",
+                  "timeAggregation": "Average",
+                  "criterionType": "StaticThresholdCriterion"
+                },
+                {
+                  "threshold": 95,
+                  "name": "WorkerPercentMetric",
+                  "metricNamespace": "Microsoft.Sql/servers/databases",
+                  "metricName": "workers_percent",
+                  "operator": "GreaterThan",
+                  "timeAggregation": "Average",
+                  "criterionType": "StaticThresholdCriterion"
+                },
+                {
+                  "threshold": 95,
+                  "name": "DataIOPercentMetric",
+                  "metricNamespace": "Microsoft.Sql/servers/databases",
+                  "metricName": "physical_data_read_percent",
+                  "operator": "GreaterThan",
+                  "timeAggregation": "Average",
+                  "criterionType": "StaticThresholdCriterion"
+                },
+                {
+                  "threshold": 95,
+                  "name": "SessionsPercentMetric",
+                  "metricNamespace": "Microsoft.Sql/servers/databases",
+                  "metricName": "sessions_percent",
+                  "operator": "GreaterThan",
+                  "timeAggregation": "Average",
+                  "criterionType": "StaticThresholdCriterion"
+                },
+                {
+                  "threshold": 95,
+                  "name": "DTUPercentMetric",
+                  "metricNamespace": "Microsoft.Sql/servers/databases",
+                  "metricName": "dtu_consumption_percent",
+                  "operator": "GreaterThan",
+                  "timeAggregation": "Average",
+                  "criterionType": "StaticThresholdCriterion"
+                }
+              ],
+              "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria"
+            },
+            "autoMitigate": true,
+            "targetResourceType": "Microsoft.Sql/servers/databases",
+            "actions": [
+              {
+                "actionGroupId": "[resourceId('microsoft.insights/actionGroups', parameters('teamName'))]",
+                "webHookProperties": {}
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
