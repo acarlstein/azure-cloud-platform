@@ -30,7 +30,7 @@
           "value": "n"
       },
       "boundedContext": {
-        "value": "Analytics"
+        "value": "<project name>"
       },
       "businessOwner": {
           "value": "<user email>"

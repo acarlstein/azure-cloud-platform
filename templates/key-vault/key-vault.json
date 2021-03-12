@@ -5,7 +5,7 @@
   "properties": {
       "dependsOn": ["log-workspace"],
       "displayName": "Key Vault",
-      "resourceGroup": "rg-analytics-placeholder",
+      "resourceGroup": "resource-group-placeholder",
       "parameters": {
           "boundedContext": {
               "value": "[parameters('boundedContext')]"

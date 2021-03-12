@@ -1,11 +1,11 @@
 {
     "kind": "template",
     "type": "Microsoft.Blueprint/blueprints/artifacts",
-    "name": "deployLogAnalyticsWorkspace",
+    "name": "logWorkspace",
     "properties": {
         "dependsOn": [],
-        "displayName": "Deploy Log Analytics Workspace",
-        "resourceGroup": "rg-analytics-placeholder",
+        "displayName": "Log Workspace",
+        "resourceGroup": "resource-group-placeholder",
         "parameters": {
             "boundedContext": {
                 "value": "[parameters('boundedContext')]"
