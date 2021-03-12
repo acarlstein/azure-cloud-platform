@@ -3,7 +3,11 @@
   "type": "Microsoft.Blueprint/blueprints/artifacts",
   "name": "DataFactorySharedRoleAssigments",
   "properties": {
-    "dependsOn": ["data-factory-dev", "data-factory-prod", "data-factory-shared"],
+    "dependsOn": [
+      "data-factory-dev",
+      "data-factory-prod",
+      "data-factory-shared"
+    ],
     "displayName": "Data Factory Shared Role Assigments",
     "resourceGroup": "resource-group-placeholder",
     "parameters": {
@@ -27,7 +31,7 @@
       },
       "team": {
         "value": "[parameters('team')]"
-      },      
+      },
       "TeamObjectId": {
         "value": "[parameters('team').objectId]"
       }
@@ -56,14 +60,14 @@
         },
         "teamObjectId": {
           "type": "string"
-        } 
+        }
       },
       "variables": {
         "dataFactoryDevName": "<Data Factory Dev Name>",
         "dataFactoryProdName": "<Data Factory Prod Name>",
-        "sharedDataFactoryName": "<Shared Data Factory>",  
-        "contributorRoleGuid": "<Contributor Role GUID",      
-        "sharedIRContributorRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('contributorRoleGuid')]"        
+        "sharedDataFactoryName": "<Shared Data Factory>",
+        "contributorRoleGuid": "<Contributor Role GUID",
+        "sharedIRContributorRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('contributorRoleGuid')]"
       },
       "resources": [
         {

@@ -39,7 +39,7 @@
       "variables": {
         "prodSqlServerName": "[concat(parameters('resourceNamePrefix'), 'sql-', parameters('resourceNamePostfix'))]",
         "sqlDatabaseName": "[concat(parameters('resourceNamePrefix'), 'sdb-', parameters('resourceNamePostfix'))]"
-      },     
+      },
       "resources": [
         {
           "type": "Microsoft.Insights/actionGroups",
@@ -49,7 +49,7 @@
           "tags": "[resourceGroup().tags]",
           "properties": {
             "groupShortName": "[parameters('teamName')]",
-            "enabled": true,            
+            "enabled": true,
             "emailReceivers": [
               {
                 "name": "parameters('teamEmail')]",
@@ -60,11 +60,11 @@
           }
         }
       ],
-      "outputs":{
-          "actionGroupId":{
-              "type":"string",
-              "value":"[resourceId('Microsoft.Insights/actionGroups', parameters('teamEmail'))]"
-          }
+      "outputs": {
+        "actionGroupId": {
+          "type": "string",
+          "value": "[resourceId('Microsoft.Insights/actionGroups', parameters('teamEmail'))]"
+        }
       }
     }
   }

@@ -27,7 +27,7 @@
       },
       "team": {
         "value": "[parameters('team')]"
-      },      
+      },
       "TeamObjectId": {
         "value": "[parameters('team').objectId]"
       }
@@ -56,16 +56,16 @@
         },
         "teamObjectId": {
           "type": "string"
-        } 
+        }
       },
       "variables": {
-        "dataFactoryDevName": "<Data Factory Dev Name>",
+        "dataFactoryDevName": "<Data Factory Dev Name>"
       },
       "resources": [
         {
-          "name": "[variables('dataFactoryDevName')]",
-          "apiVersion": "2018-06-01",
           "type": "Microsoft.DataFactory/factories",
+          "apiVersion": "2018-06-01",
+          "name": "[variables('dataFactoryDevName')]",
           "location": "[parameters('location')]",
           "identity": {
             "type": "SystemAssigned"

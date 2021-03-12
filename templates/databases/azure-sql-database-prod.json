@@ -1,0 +1,297 @@
+{
+  "kind": "template",
+  "type": "Microsoft.Blueprint/blueprints/artifacts",
+  "name": "AzureSQLDatabaseProd",
+  "properties": {
+    "dependsOn": [
+      "storage-account",
+      "key-vault",
+      "azure-sql-server-prod"
+    ],
+    "displayName": "Azure SQL Database Production",
+    "resourceGroup": "resource-group-placeholder",
+    "parameters": {
+      "isProduction": {
+        "value": "[parameters('isProduction')]"
+      },
+      "location": {
+        "value": "[parameters('location')]"
+      },
+      "supportContact": {
+        "value": "[parameters('supportContact')]"
+      },
+      "tenantId": {
+        "value": "[parameters('tenantId')]"
+      },
+      "subscriptionId": {
+        "value": "[parameters('subscriptionId')]"
+      },
+      "boundedContext": {
+        "value": "[parameters('boundedContext')]"
+      },
+      "businessOwner": {
+        "value": "[parameters('businessOwner')]"
+      },
+      "teamObjectId": {
+        "value": "[parameters('team').objectId]"
+      },
+      "teamName": {
+        "value": "[parameters('team').name]"
+      },
+      "deploymentApplicationName": {
+        "value": "[parameters('deployment').applicationName]"
+      },
+      "deploymentApplicationObjectId": {
+        "value": "[parameters('deployment').objectId]"
+      },
+      "team": {
+        "value": "[parameters('team')]"
+      },
+      "auditingRetentionInDays": {
+        "value": "[parameters('auditingRetentionInDays')]"
+      },
+      "dataClass": {
+        "value": "restricted"
+      },
+      "isPII": {
+        "value": "n"
+      },
+      "administratorUsernameProd": {
+        "reference": {
+          "keyVault": {
+            "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.KeyVault/vaults/', '<Vault Key Prod Name')]"
+          },
+          "secretName": "dbAdminUsernameProd"
+        }
+      },
+      "administratorPasswordProd": {
+        "reference": {
+          "keyVault": {
+            "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.KeyVault/vaults/', '<Vault Key Prod Name>')]"
+          },
+          "secretName": "dbAdminPasswordProd"
+        }
+      }
+    },
+    "template": {
+      "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "tenantId": {
+          "type": "string"
+        },
+        "subscriptionId": {
+          "type": "string"
+        },
+        "boundedContext": {
+          "type": "string"
+        },
+        "businessOwner": {
+          "type": "string"
+        },
+        "teamObjectId": {
+          "type": "string"
+        },
+        "teamName": {
+          "type": "string"
+        },
+        "deploymentApplicationName": {
+          "type": "string"
+        },
+        "deploymentApplicationObjectId": {
+          "type": "string"
+        },
+        "isProduction": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "supportContact": {
+          "type": "string"
+        },
+        "team": {
+          "type": "string"
+        },
+        "auditingRetentionInDays": {
+          "type": "int"
+        },
+        "dataClass": {
+          "type": "string"
+        },
+        "isPII": {
+          "type": "string"
+        },
+        "administratorUsernameProd": {
+          "type": "string"
+        },
+        "administratorPasswordProd": {
+          "type": "securestring"
+        }
+      },
+      "variables": {
+        "azureSQLServerProdName": "<Azure SQL Server Production Name>",
+        "azureSQLDatabaseProdName": "<Azure SQL Database Production Name>",
+        "auditingStorageAccountName": "<Auditing Storage Account Name>",
+        "auditingStorageAccountURI": "[concat('https://', variables('auditingStorageAccountName'), '.blob.core.windows.net')]",
+        "auditingStorageAccountAccessKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('auditingStorageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]",
+        "auditingStorageAccountEventTypes": [
+          "APPLICATION_ROLE_CHANGE_PASSWORD_GROUP",
+          "USER_CHANGE_PASSWORD_GROUP",
+          "BACKUP_RESTORE_GROUP",
+          "BATCH_COMPLETED_GROUP",
+          "SCHEMA_OBJECT_ACCESS_GROUP",
+          "SCHEMA_OBJECT_CHANGE_GROUP",
+          "SCHEMA_OBJECT_OWNERSHIP_CHANGE_GROUP",
+          "SCHEMA_OBJECT_PERMISSION_CHANGE_GROUP",
+          "DATABASE_OBJECT_CHANGE_GROUP",
+          "DATABASE_OBJECT_OWNERSHIP_CHANGE_GROUP",
+          "DATABASE_OBJECT_PERMISSION_CHANGE_GROUP",
+          "DATABASE_OPERATION_GROUP",
+          "DATABASE_PERMISSION_CHANGE_GROUP",
+          "DATABASE_PRINCIPAL_CHANGE_GROUP",
+          "DATABASE_PRINCIPAL_IMPERSONATION_GROUP",
+          "DATABASE_ROLE_MEMBER_CHANGE_GROUP",
+          "FAILED_DATABASE_AUTHENTICATION_GROUP",
+          "SUCCESSFUL_DATABASE_AUTHENTICATION_GROUP"
+        ]
+      },
+      "resources": [
+        {
+          "type": "Microsoft.Sql/servers/databases",
+          "apiVersion": "2020-08-01-preview",
+          "name": "[concat(variables('azureSQLServerProdName'), '/', variables('azureSQLDatabaseProdName'))]",
+          "location": "[parameters('location')]",
+          "comments": "Database for Production",
+          "dependsOn": [
+            "[resourceId('Microsoft.Sql/servers', variables('azureSQLServerProdName'))]"
+          ],
+          "tags": "[resourceGroup().tags]",
+          "sku": {
+            "name": "S3",
+            "tier": "Standard",
+            "capacity": 100
+          },
+          "kind": "v12.0,user",
+          "properties": {
+            "collation": "SQL_Latin1_General_CP1_CI_AS",
+            "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
+            "maxSizeBytes": 268435456000,
+            "zoneRedundant": false,
+            "readScale": "Disabled",
+            "readReplicaCount": 0,
+            "storageAccountType": "GRS"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Sql/servers/databases/backupShortTermRetentionPolicies",
+              "name": "Default",
+              "apiVersion": "2017-10-01-preview",
+              "properties": {
+                "retentionDays": "30"
+              }
+            },
+            {
+              "type": "Microsoft.Sql/servers/vulnerabilityAssessments",
+              "apiVersion": "2018-06-01-preview",
+              "name": "Default",
+              "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', variables('azureSQLServerProdName'))]"
+              ],
+              "properties": {
+                "storageAccountAccessKey": "[variables('audittingStorageAccountAccessKey')]",
+                "storageContainerPath": "[variables('auditingStorageAccountURI')]",
+                "recurringScans": {
+                  "isEnabled": true,
+                  "emailSubscriptionAdmins": true,
+                  "emails": []
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Sql/servers/databases/vulnerabilityAssessments/rules/baselines",
+              "apiVersion": "2018-06-01-preview",
+              "name": "/default/VA2108/Default",
+              "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/vulnerabilityAssessments', variables('azureSQLServerProdName'), 'Default')]"
+              ],
+              "properties": {
+                "baselineResults": [
+                  {
+                    "result": [
+                      "dbo",
+                      "db_owner",
+                      "SQL_USER",
+                      "INSTANCE"
+                    ]
+                  },
+                  {
+                    "result": [
+                      "<Data Factory Production Name>",
+                      "db_ddladmin",
+                      "EXTERNAL_USER",
+                      "EXTERNAL"
+                    ]
+                  },
+                  {
+                    "result": [
+                      "<Data Factory Production Name>",
+                      "db_ddladmin",
+                      "EXTERNAL_USER",
+                      "EXTERNAL"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.Sql/servers/databases/vulnerabilityAssessments/rules/baselines",
+              "apiVersion": "2018-06-01-preview",
+              "name": "/master/default/VA2063/Default",
+              "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/vulnerabilityAssessments', variables('azureSQLServerProdName'), 'Default')]"
+              ],
+              "properties": {
+                "baselineResults": [
+                  {
+                    "result": [
+                      "AllowVPNIps",
+                      "y.y.y.y",
+                      "y2.y2.y2.y2"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.Sql/servers/databases/vulnerabilityAssessments/rules/baselines",
+              "apiVersion": "2018-06-01-preview",
+              "name": "/master/default/VA2065/Default",
+              "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/vulnerabilityAssessments', variables('azureSQLServerProdName'), 'Default')]"
+              ],
+              "properties": {
+                "baselineResults": [
+                  {
+                    "result": [
+                      "AllowComputersIps",
+                      "x.x.x.x",
+                      "x2.x2.x2.x2"
+                    ]
+                  },
+                  {
+                    "result": [
+                      "AllowVPNIps",
+                      "y.y.y.y",
+                      "y2.y2.y2.y2"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
