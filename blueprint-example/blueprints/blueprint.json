@@ -1,0 +1,133 @@
+{
+  "name": "blueprint",
+  "properties": {
+    "description": "RBAC and Tagging",
+    "displayName": "RBAC and Tagging",
+    "targetScope": "subscription",
+    "parameters": {
+      "tenantId": {
+        "type": "string",
+        "metadata": {
+          "displayName": "AD Tenant ID",
+          "description": "The Active Directory Tenant ID"
+        }
+      },
+      "subscriptionId": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Subscription ID",
+          "description": "The container where your created resources are created"
+        }
+      },
+      "team": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Team",
+          "description": "Team"
+        },
+        "objectId": {
+          "type": "string",
+          "metadata": {
+            "displayName": "Group Object ID",
+            "description": "The objectID GUID for the team in active directory group",
+            "strongType": "PrincipalId"
+          }
+        },
+        "name": {
+          "type": "string",
+          "metadata": {
+            "displayName": "Group Name",
+            "description": "The name of the group"
+          }
+        },
+        "email": {
+          "defaultValue": "<email>",
+          "type": "string",
+          "metadata": {
+            "displayName": "Email Address",
+            "description": "Email address used for action group"
+          }
+        }
+      },
+      "deploymentApplicationObjectId": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Deployment Application Object ID",
+          "description": "The objectID GUID for the deployment application - the ARM Service Connection",
+          "strongType": "PrincipalId"
+        }
+      },
+      "deploymentApplicationName": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Deployment Application Name",
+          "description": "The name of the deployment application"
+        }
+      },
+      "boundedContext": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Bounded Context",
+          "description": "The name of the bounded context"
+        }
+      },
+      "businessOwner": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Business Owner",
+          "description": "Email address for the business owner"
+        }
+      },
+      "supportContact": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Support Contact",
+          "description": "Email address for the team for support issues"
+        }
+      },
+      "auditingRetentionInDays": {
+        "type": "int",
+        "defaultValue": 120,
+        "metadata": {
+          "displayName": "Auditing Log retention (in days)",
+          "description": ""
+        }
+      },
+      "location": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Location",
+          "description": "The resource location, also known as region"
+        }
+      },
+      "isPii": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Is PII?",
+          "description": "Does this resource-group or resource contain PII? (y/n)"
+        }
+      },
+      "isProduction": {
+        "defaultValue": "n",
+        "type": "string",
+        "metadata": {
+          "displayName": "Is Production?",
+          "description": "Is this resource-group or resource go to production? (y/n)"
+        }
+      }
+    },
+    "resourceGroups": {
+      "resource-group-placeholder": {
+        "tags": {
+          "Team": "[parameters('team')]",
+          "BoundedContext": "[parameters('boundedContext')]",
+          "BusinessOwner": "[parameters('businessOwner')]",
+          "IsPII": "[parameters('isPii')]",
+          "IsProduction": "[parameters('isProduction')]",
+          "Region": "[parameters('location')]",
+          "SupportContact": "[parameters('supportContact')]",
+        }
+      }
+    }
+  }
+}

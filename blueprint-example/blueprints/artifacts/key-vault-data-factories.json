@@ -1,0 +1,172 @@
+{
+  "kind": "template",
+  "type": "Microsoft.Blueprint/blueprints/artifacts",
+  "name": "keyVault",
+  "properties": {
+    "dependsOn": [
+      "log-workspace",
+      "key-vault"
+    ],
+    "displayName": "Key Vault",
+    "resourceGroup": "resource-group-placeholder",
+    "parameters": {
+      "boundedContext": {
+        "value": "[parameters('boundedContext')]"
+      },
+      "businessOwner": {
+        "value": "[parameters('businessOwner')]"
+      },
+      "isProduction": {
+        "value": "[parameters('isProduction')]"
+      },
+      "location": {
+        "value": "[parameters('location')]"
+      },
+      "supportContact": {
+        "value": "[parameters('supportContact')]"
+      },
+      "team": {
+        "value": "[parameters('team')]"
+      },
+      "tenantId": {
+        "value": "[parameters('tenantId')]"
+      },
+      "teamObjectId": {
+        "value": "[parameters('team').objectId]"
+      },
+      "deploymentApplicationObjectId": {
+        "value": "[parameters('deployment').applicationObjectId]"
+      },
+      "settingName": {
+        "value": "<Setting name>"
+      },
+      "retentionPolicyDays": {
+        "value": 90
+      }
+    },
+    "template": {
+      "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "boundedContext": {
+          "type": "string"
+        },
+        "businessOwner": {
+          "type": "string"
+        },
+        "isProduction": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "supportContact": {
+          "type": "string"
+        },
+        "team": {
+          "type": "string"
+        },
+        "resourceNamePrefix": {
+          "type": "string"
+        },
+        "resourceNamePostfix": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "teamObjectId": {
+          "type": "string"
+        },
+        "deploymentApplicationObjectId": {
+          "type": "string"
+        },
+        "settingName": {
+          "type": "string"
+        },
+        "retentionPolicyDays": {
+          "type": "string"
+        }
+      },
+      "variables": {
+        "keyVaultName": "<Key Vault Name>",
+        "workspaceName": "<Workspace Name>",
+        "workspaceId": "[concat('/subscriptions/', subscription().subscriptionId, '/resourcegroups/', resourceGroup().name, '/providers/microsoft.operationalinsights/workspaces/', variables('workspaceName'))]",
+        "dataFactoryDevName": "<Data Factory in Dev>",
+        "dataFactoryProdName": "<Data Factory in Prod>"
+      },
+      "resources": [
+        {
+          "type": "Microsoft.KeyVault/vaults",
+          "apiVersion": "2016-10-01",
+          "name": "[variables('keyVaultName')]",
+          "location": "[resourceGroup().location]",
+          "properties": {
+            "sku": {
+              "family": "A",
+              "name": "Standard"
+            },
+            "tenantId": "[parameters('tenantId')]",
+            "accessPolicies": [
+              {
+                "metadata": "Data Factory Dev Access",
+                "tenantId": "[parameters('tenantId')]",
+                "objectId": "[reference(resourceId('Microsoft.DataFactory/factories', variables('dataFactoryDevName')), '2018-06-01', 'full').identity.principalId]",
+                "permissions": {
+                  "keys": [],
+                  "secrets": [
+                    "Get"
+                  ],
+                  "certificates": []
+                }
+              },
+              {
+                "metadata": "Data Factory Prod Access",
+                "tenantId": "[parameters('tenantId')]",
+                "objectId": "[reference(resourceId('Microsoft.DataFactory/factories', variables('dataFactoryProdName')), '2018-06-01', 'full').identity.principalId]",
+                "permissions": {
+                  "keys": [],
+                  "secrets": [
+                    "Get"
+                  ],
+                  "certificates": []
+                }
+              }
+            ],
+            "enableSoftDelete": true,
+            "enabledForDeployment": true,
+            "enablePurgeProtection": true,
+            "enabledForDiskEncryption": false,
+            "enabledForTemplateDeployment": true
+          }
+        },
+        {
+          "type": "Microsoft.KeyVault/vaults/providers/diagnosticSettings",
+          "apiVersion": "2017-05-01-preview",
+          "name": "[concat(variables('keyVaultName'), '/Microsoft.Insights/', parameters('settingName'))]",
+          "dependsOn": [],
+          "properties": {
+            "workspaceId": "[variables('workspaceId')]",
+            "logs": [
+              {
+                "category": "AuditEvent",
+                "enabled": true,
+                "retentionPolicy": {
+                  "enabled": true,
+                  "days": "[parameters('retentionPolicyDays')]"
+                }
+              }
+            ],
+            "metrics": [
+              {
+                "category": "AllMetrics",
+                "enabled": true
+              }
+            ]
+          }
+        }
+      ],
+      "outputs": {}
+    }
+  }
+}

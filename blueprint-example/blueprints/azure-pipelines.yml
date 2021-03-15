@@ -1,0 +1,57 @@
+trigger:
+  batch: true
+  branches:
+    include:
+    - master
+  paths:
+    exclude:
+    - '*.md'
+parameters:
+- name: serviceConnection
+  displayName: Service connection
+  type: string
+  default: prod
+  values:
+    - dev
+    - prod
+
+variables:
+  ${{ if eq(parameters.serviceConnection, 'prod') }}:
+     env: 'prod'
+  ${{ if eq(parameters.serviceConnection, 'dev') }}:
+     env: 'dev'         
+
+  blueprintPath: '$(Build.SourcesDirectory)\blueprints'
+  envPath: '$(Build.SourcesDirectory)\environments\$(env).json'
+  azureBlueprintName: 'blueprint'
+  azureEnvironmentName: '$(env)'
+  serviceConnection: ${{ parameters.serviceConnection }}
+  assignBlueprintTimeoutInSeconds: 800
+
+  tag: '$(Build.BuildId)'
+  
+pool:
+  vmImage: 'windows-latest'
+
+jobs:       
+- job: deployBluePrint
+  displayName: 'Create and Assign Blueprint - ${{ variables.env }}'
+  steps:
+  - task: CreateBlueprint@1
+    displayName: Create Blueprint
+    inputs:
+      PublishBlueprint: true
+      azureSubscription: $(serviceConnection)
+      BlueprintName: $(azureBlueprintName)
+      BlueprintPath: $(blueprintPath)
+    
+  - task: AssignBlueprint@1
+    displayName: Assign Blueprint
+    inputs:
+      azureSubscription: $(serviceConnection)
+      AssignmentName: $(azureEnvironmentName)
+      BlueprintName: $(azureBlueprintName)
+      ParametersFile: $(envPath)
+      Timeout: $(assignBlueprintTimeoutInSeconds)
+      Wait: true
+      StopOnFailure: true

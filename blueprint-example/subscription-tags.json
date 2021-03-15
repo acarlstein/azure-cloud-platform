@@ -1,0 +1,56 @@
+{
+  "kind": "template",
+  "resourceGroup": "resource-group-placeholder",
+  "properties": {
+    "parameters": {
+      "team": {
+        "value": "[parameters('team')]"
+      },
+      "boundedContext": {
+        "value": "[parameters('boundedContext')]"
+      },
+      "businessOwner": {
+        "value": "[parameters('businessOwner')]"
+      },
+      "supportContact": {
+        "value": "[parameters('supportContact')]"
+      }
+    },
+    "template": {
+      "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "team": {
+          "type": "string"
+        },
+        "boundedContext": {
+          "type": "string"
+        },
+        "businessOwner": {
+          "type": "string"
+        },
+        "supportContact": {
+          "type": "string"
+        }
+      },
+      "variables": {},
+      "resources": [
+        {
+          "type": "Microsoft.Resources/tags",
+          "name": "default",
+          "apiVersion": "2019-10-01",
+          "dependsOn": [],
+          "properties": {
+            "tags": {
+              "Team": "[parameters('team')]",
+              "BoundedContext": "[parameters('boundedContext')]",
+              "BusinessOwner": "[parameters('businessOwner')]",
+              "SupportContact": "[parameters('supportContact')]"
+              
+            }
+          }
+        }
+      ]
+    }
+  }
+}

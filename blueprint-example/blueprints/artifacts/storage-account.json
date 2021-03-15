@@ -1,0 +1,126 @@
+{
+  "kind": "template",
+  "type": "Microsoft.Blueprint/blueprints/artifacts",
+  "name": "StorageAccount",
+  "properties": {
+    "dependsOn": [
+      "data-factory-dev",
+      "data-factory-prod",
+      "data-factory-shared"
+    ],
+    "displayName": "Storage Account",
+    "resourceGroup": "resource-group-placeholder",
+    "parameters": {
+      "boundedContext": {
+        "value": "[parameters('boundedContext')]"
+      },
+      "businessOwner": {
+        "value": "[parameters('businessOwner')]"
+      },
+      "isProduction": {
+        "value": "[parameters('isProduction')]"
+      },
+      "location": {
+        "value": "[parameters('location')]"
+      },
+      "supportContact": {
+        "value": "[parameters('supportContact')]"
+      },
+      "team": {
+        "value": "[parameters('team')]"
+      },
+      "sku": {
+        "value": "D1"
+      }
+    },
+    "template": {
+      "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "boundedContext": {
+          "type": "string"
+        },
+        "businessOwner": {
+          "type": "string"
+        },
+        "isProduction": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "supportContact": {
+          "type": "string"
+        },
+        "team": {
+          "type": "string"
+        },
+        "sku": {
+          "type": "string"
+        }
+      },
+      "variables": {
+        "storageAccountName": "<Storage Account Name>"
+      },
+      "resources": [
+        {
+          "type": "Microsoft.Storage/storageAccounts",
+          "apiVersion": "2019-06-01",
+          "name": "[variables('storageAccountName')]",
+          "location": "[parameters('location')]",
+          "tags": "[resourceGroup().tags]",
+          "sku": {
+            "name": "Standard_LRS",
+            "tier": "Standard"
+          },
+          "kind": "StorageV2",
+          "properties": {
+            "largeFileSharesState": "Disabled",
+            "isHnsEnabled": false,
+            "networkAcls": {
+              "bypass": "AzureServices",
+              "virtualNetworkRules": [],
+              "ipRules": [],
+              "defaultAction": "Allow"
+            },
+            "supportsHttpsTrafficOnly": true,
+            "encryption": {
+              "services": {
+                "file": {
+                  "keyType": "Account",
+                  "enabled": true
+                },
+                "blob": {
+                  "keyType": "Account",
+                  "enabled": true
+                }
+              },
+              "keySource": "Microsoft.Storage"
+            },
+            "accessTier": "Hot"
+          }
+        },
+        {
+          "type": "Microsoft.Storage/storageAccounts/blobServices",
+          "apiVersion": "2019-06-01",
+          "name": "[concat(variables('storageAccountName'), '/default')]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+          ],
+          "sku": {
+            "name": "Standard_LRS",
+            "tier": "Standard"
+          },
+          "properties": {
+            "cors": {
+              "corsRules": []
+            },
+            "deleteRetentionPolicy": {
+              "enabled": false
+            }
+          }
+        }
+      ]
+    }
+  }
+}
