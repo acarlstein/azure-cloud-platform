@@ -1,0 +1,65 @@
+{
+  "identity": {
+      "type": "SystemAssigned"
+  },
+  "location": "<location>",
+  "properties": {
+    "resourceGroups": {
+        "resource-group-placeholder": {
+            "name": "<resource Group Name>",
+            "location": "<location>"
+        }
+    },
+    "locks": {
+        "mode": "none"
+    },
+    "parameters": {
+      "isProduction": {
+        "value": "n"
+      },
+      "tenantId": {
+          "value": "<GUID value>"
+      },
+      "subscriptionId": {
+          "value": "<GUID value>"
+      },
+      "location": {
+        "value": "<location>"
+      },
+      "isPii": {
+          "value": "n"
+      },
+      "boundedContext": {
+        "value": "<project name>"
+      },
+      "businessOwner": {
+          "value": "<user email>"
+      },
+      "supportContact": {
+          "value": "<username>@<company>.onmicrosoft.com"
+      },
+      "auditingRetentionInDays": {
+        "value": 120
+      },   
+      "team": {
+        "name": {
+          "value": "<Team Name>"
+        },
+        "objectId": {
+          "value": "<GUID value>"
+        },
+        "email":{
+          "value": "<email>"
+        }
+      },
+      "deployment": {
+        "ObjectId": {
+          "value": "<GUID value>"
+        },
+        "applicationName": {
+          "value": "<deployment application name>"
+        }
+      }
+    }
+  }
+}

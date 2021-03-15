@@ -1,0 +1,235 @@
+{
+  "kind": "template",
+  "type": "Microsoft.Blueprint/blueprints/artifacts",
+  "name": "AzureSQLServerProd",
+  "properties": {
+    "dependsOn": [
+      "storage-account",
+      "key-vault"
+    ],
+    "displayName": "Azure SQL Server Production",
+    "resourceGroup": "resource-group-placeholder",
+    "parameters": {
+      "isProduction": {
+        "value": "[parameters('isProduction')]"
+      },
+      "location": {
+        "value": "[parameters('location')]"
+      },
+      "supportContact": {
+        "value": "[parameters('supportContact')]"
+      },
+      "tenantId": {
+        "value": "[parameters('tenantId')]"
+      },
+      "subscriptionId": {
+        "value": "[parameters('subscriptionId')]"
+      },
+      "boundedContext": {
+        "value": "[parameters('boundedContext')]"
+      },
+      "businessOwner": {
+        "value": "[parameters('businessOwner')]"
+      },
+      "teamObjectId": {
+        "value": "[parameters('team').objectId]"
+      },
+      "teamName": {
+        "value": "[parameters('team').name]"
+      },
+      "deploymentApplicationName": {
+        "value": "[parameters('deployment').applicationName]"
+      },
+      "deploymentApplicationObjectId": {
+        "value": "[parameters('deployment').objectId]"
+      },
+      "team": {
+        "value": "[parameters('team')]"
+      },
+      "auditingRetentionInDays": {
+        "value": "[parameters('auditingRetentionInDays')]"
+      },
+      "dataClass": {
+        "value": "restricted"
+      },
+      "isPII": {
+        "value": "n"
+      },
+      "administratorUsernameProd": {
+        "reference": {
+          "keyVault": {
+            "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.KeyVault/vaults/', '<Vault Key Dev Name>')]"
+          },
+          "secretName": "dbAdminUsername"
+        }
+      },
+      "administratorPasswordProd": {
+        "reference": {
+          "keyVault": {
+            "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.KeyVault/vaults/', '<Vault Key Dev Name>')]"
+          },
+          "secretName": "dbAdminPassword"
+        }
+      }
+    },
+    "template": {
+      "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "tenantId": {
+          "type": "string"
+        },
+        "subscriptionId": {
+          "type": "string"
+        },
+        "boundedContext": {
+          "type": "string"
+        },
+        "businessOwner": {
+          "type": "string"
+        },
+        "teamObjectId": {
+          "type": "string"
+        },
+        "teamName": {
+          "type": "string"
+        },
+        "deploymentApplicationName": {
+          "type": "string"
+        },
+        "deploymentApplicationObjectId": {
+          "type": "string"
+        },
+        "isProduction": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "supportContact": {
+          "type": "string"
+        },
+        "team": {
+          "type": "string"
+        },
+        "auditingRetentionInDays": {
+          "type": "int"
+        },
+        "dataClass": {
+          "type": "string"
+        },
+        "isPII": {
+          "type": "string"
+        },
+        "administratorUsernameProd": {
+          "type": "string"
+        },
+        "administratorPasswordProd": {
+          "type": "securestring"
+        }
+      },
+      "variables": {
+        "azureSQLServerProdName": "<Azure SQL Server Production Name>",
+        "auditingStorageAccountName": "<Auditing Storage Account Name>",
+        "auditingStorageAccountURI": "[concat('https://', variables('auditingStorageAccountName'), '.blob.core.windows.net')]",
+        "auditingStorageAccountAccessKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('auditingStorageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]",
+        "auditingStorageAccountEventTypes": [
+          "APPLICATION_ROLE_CHANGE_PASSWORD_GROUP",
+          "USER_CHANGE_PASSWORD_GROUP",
+          "BACKUP_RESTORE_GROUP",
+          "BATCH_COMPLETED_GROUP",
+          "SCHEMA_OBJECT_ACCESS_GROUP",
+          "SCHEMA_OBJECT_CHANGE_GROUP",
+          "SCHEMA_OBJECT_OWNERSHIP_CHANGE_GROUP",
+          "SCHEMA_OBJECT_PERMISSION_CHANGE_GROUP",
+          "DATABASE_OBJECT_CHANGE_GROUP",
+          "DATABASE_OBJECT_OWNERSHIP_CHANGE_GROUP",
+          "DATABASE_OBJECT_PERMISSION_CHANGE_GROUP",
+          "DATABASE_OPERATION_GROUP",
+          "DATABASE_PERMISSION_CHANGE_GROUP",
+          "DATABASE_PRINCIPAL_CHANGE_GROUP",
+          "DATABASE_PRINCIPAL_IMPERSONATION_GROUP",
+          "DATABASE_ROLE_MEMBER_CHANGE_GROUP",
+          "FAILED_DATABASE_AUTHENTICATION_GROUP",
+          "SUCCESSFUL_DATABASE_AUTHENTICATION_GROUP"
+        ]
+      },
+      "resources": [
+        {
+          "type": "Microsoft.Sql/servers",
+          "apiVersion": "2019-06-01-preview",
+          "name": "[variables('azureSQLServerProdName')]",
+          "location": "[parameters('location')]",
+          "comments": "Azure SQL Server Instance Production",
+          "tags": "[resourceGroup().tags]",
+          "kind": "v12.0",
+          "properties": {
+            "administratorLogin": "[parameters('administratorUsernameProd')]",
+            "administratorLoginPassword": "[parameters('administratorPasswordProd')]",
+            "version": "12.0"
+          },
+          "resources": [
+            {
+              "type": "auditingSettings",
+              "apiVersion": "2019-06-01-preview",
+              "name": "AuditingSettings",
+              "properties": {
+                "state": "Enabled",
+                "storageEndpoint": "[variables('auditingStorageAccountURI')]",
+                "storageAccountName": "[variables('auditingStorageAccountName')]",
+                "storageAccountAccessKey": "[variables('auditingStorageAccountAccessKey')]",
+                "storageAccountSubscriptionId": "[parameters('subscriptionId')]",
+                "auditActionsAndGroups": "[variables('auditingStorageAccountEventTypes')]",
+                "retentionInDays": "[parameters('auditingRetentionInDays')]",
+                "isStorageSecondaryKeyInUse": false
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', variables('azureSQLServerProdName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Sql/servers/firewallRules",
+              "apiVersion": "2015-05-01-preview",
+              "name": "AllowAllWindowsAzureIps",
+              "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', variables('azureSQLServerProdName'))]"
+              ],
+              "properties": {
+                "startIpAddress": "x.x.x.x",
+                "endIpAddress": "x.x.x.x"
+              }
+            },
+            {
+              "type": "Microsoft.Sql/servers/firewallRules",
+              "apiVersion": "2015-05-01-preview",
+              "name": "AllowVPNIps]",
+              "comments": "Firewall rules for SQL server instance",
+              "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', variables('azureSQLServerProdName'))]"
+              ],
+              "properties": {
+                "startIpAddress": "y.y.y.y",
+                "endIpAddress": "y.y.y.y"
+              }
+            },
+            {
+              "type": "Microsoft.Sql/servers/administrators",
+              "apiVersion": "2019-06-01-preview",
+              "name": "ActiveDirectory",
+              "location": "[parameters('location')]",
+              "properties": {
+                "administratorType": "ActiveDirectory",
+                "login": "[parameters('deploymentApplicationName')]",
+                "sid": "[parameters('deploymentApplicationObjectId')]",
+                "tenantId": "[parameters('tenantId')]"
+              },
+              "dependsOn": [
+                "[concat('Microsoft.Sql/servers/', variables('azureSQLServerProdName'))]"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

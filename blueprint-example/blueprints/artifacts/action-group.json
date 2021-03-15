@@ -1,0 +1,71 @@
+{
+  "kind": "template",
+  "type": "Microsoft.Blueprint/blueprints/artifacts",
+  "name": "actionGroup",
+  "properties": {
+    "displayName": "<Action Group Name>",
+    "resourceGroup": "resource-group-placeholder",
+    "parameters": {
+      "teamEmail": {
+        "value": "[parameters('team').email]"
+      },
+      "teamName": {
+        "value": "[parameters('team').name]"
+      },
+      "subscriptionId": {
+        "value": "[parameters('subscriptionId')]"
+      },
+      "projectName": {
+        "value": "[parameters('projectName')]"
+      }
+    },
+    "template": {
+      "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "teamEmail": {
+          "type": "string"
+        },
+        "teamName": {
+          "type": "string"
+        },
+        "subscriptionId": {
+          "type": "string"
+        },
+        "projectName": {
+          "type": "string"
+        }
+      },
+      "variables": {
+        "prodSqlServerName": "[concat(parameters('resourceNamePrefix'), 'sql-', parameters('resourceNamePostfix'))]",
+        "sqlDatabaseName": "[concat(parameters('resourceNamePrefix'), 'sdb-', parameters('resourceNamePostfix'))]"
+      },
+      "resources": [
+        {
+          "type": "Microsoft.Insights/actionGroups",
+          "apiVersion": "2019-06-01",
+          "name": "[parameters('projectName')]",
+          "location": "Global",
+          "tags": "[resourceGroup().tags]",
+          "properties": {
+            "groupShortName": "[parameters('teamName')]",
+            "enabled": true,
+            "emailReceivers": [
+              {
+                "name": "parameters('teamEmail')]",
+                "emailAddress": "[parameters('teamEmail')]",
+                "useCommonAlertSchema": false
+              }
+            ]
+          }
+        }
+      ],
+      "outputs": {
+        "actionGroupId": {
+          "type": "string",
+          "value": "[resourceId('Microsoft.Insights/actionGroups', parameters('teamEmail'))]"
+        }
+      }
+    }
+  }
+}
